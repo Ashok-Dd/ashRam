@@ -1,26 +1,244 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
+
+/* ── Design Tokens ───────────────────────────────────────────────────────── */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background:          var(--background);
+  --color-foreground:          var(--foreground);
+  --color-card:                var(--card);
+  --color-card-foreground:     var(--card-foreground);
+  --color-popover:             var(--popover);
+  --color-popover-foreground:  var(--popover-foreground);
+  --color-primary:             var(--primary);
+  --color-primary-foreground:  var(--primary-foreground);
+  --color-secondary:           var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted:               var(--muted);
+  --color-muted-foreground:    var(--muted-foreground);
+  --color-accent:              var(--accent);
+  --color-accent-foreground:   var(--accent-foreground);
+  --color-destructive:         var(--destructive);
+  --color-border:              var(--border);
+  --color-input:               var(--input);
+  --color-ring:                var(--ring);
+  --radius-sm:  calc(var(--radius) * 0.6);
+  --radius-md:  calc(var(--radius) * 0.8);
+  --radius-lg:  var(--radius);
+  --color-surface: var(--surface);
+  --color-divider: var(--divider);
+
+  --font-sans:    var(--font-inter);
+  --font-heading: var(--font-cormorant);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ── Light Theme ─────────────────────────────────────────────────────────── */
+
+:root {
+  --background:           oklch(0.985 0 0);
+  --foreground:           oklch(0.09 0 0);
+  --card:                 oklch(0.97 0 0);
+  --card-foreground:      oklch(0.09 0 0);
+  --popover:              oklch(0.97 0 0);
+  --popover-foreground:   oklch(0.09 0 0);
+  --primary:              oklch(0.09 0 0);
+  --primary-foreground:   oklch(0.985 0 0);
+  --secondary:            oklch(0.93 0 0);
+  --secondary-foreground: oklch(0.09 0 0);
+  --muted:                oklch(0.93 0 0);
+  --muted-foreground:     oklch(0.45 0 0);
+  --accent:               oklch(0.93 0 0);
+  --accent-foreground:    oklch(0.09 0 0);
+  --destructive:          oklch(0.577 0.245 27.325);
+  --border:               oklch(0.87 0 0);
+  --input:                oklch(0.87 0 0);
+  --ring:                 oklch(0.55 0 0);
+  --radius:               0.25rem;
+  --surface:              #F0EEE9;
+  --divider:              #E2E0DB;
+}
+
+/* ── Dark Theme ──────────────────────────────────────────────────────────── */
+
+.dark {
+  --background:           oklch(0.07 0 0);
+  --foreground:           oklch(0.96 0 0);
+  --card:                 oklch(0.11 0 0);
+  --card-foreground:      oklch(0.96 0 0);
+  --popover:              oklch(0.11 0 0);
+  --popover-foreground:   oklch(0.96 0 0);
+  --primary:              oklch(0.92 0 0);
+  --primary-foreground:   oklch(0.11 0 0);
+  --secondary:            oklch(0.17 0 0);
+  --secondary-foreground: oklch(0.96 0 0);
+  --muted:                oklch(0.17 0 0);
+  --muted-foreground:     oklch(0.55 0 0);
+  --accent:               oklch(0.17 0 0);
+  --accent-foreground:    oklch(0.96 0 0);
+  --destructive:          oklch(0.704 0.191 22.216);
+  --border:               oklch(1 0 0 / 8%);
+  --input:                oklch(1 0 0 / 12%);
+  --ring:                 oklch(0.45 0 0);
+  --surface:              #111111;
+  --divider:              #1E1E1E;
+}
+
+/* ── Keyframe Animations ─────────────────────────────────────────────────── */
+
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes marquee-scroll-reverse {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
+
+/* ── Base Styles ─────────────────────────────────────────────────────────── */
+
+@layer base {
+  *, *::before, *::after {
+    @apply border-border box-border;
+  }
+
+  html {
+    font-family: var(--font-inter), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-cormorant), Georgia, serif;
+    line-height: 1.1;
+  }
+
+  ::selection {
+    background-color: var(--foreground);
+    color: var(--background);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ── Utility Classes ─────────────────────────────────────────────────────── */
+
+@layer utilities {
+  .font-heading {
+    font-family: var(--font-cormorant), Georgia, serif;
+  }
+
+  .will-gpu {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  .marquee-track {
+    display: flex;
+    white-space: nowrap;
+    animation: marquee-scroll var(--marquee-duration, 30s) linear infinite;
+    will-change: transform;
+  }
+
+  .marquee-track-reverse {
+    animation: marquee-scroll-reverse var(--marquee-duration, 30s) linear infinite;
+  }
+
+  /* ── Button fill-from-bottom animation ────────────────────────────────── */
+
+  /* Default variant: foreground bg → hover fill with background color */
+  .btn-fill-default {
+    background-image: linear-gradient(var(--background), var(--background));
+    background-size: 100% 0%;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    background-color: var(--foreground);
+    color: var(--background);
+    transition: background-size 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                color 0.3s ease,
+                border-color 0.3s ease;
+  }
+  .btn-fill-default:hover,
+  .btn-fill-default:focus-visible {
+    background-size: 100% 100%;
+    color: var(--foreground);
+  }
+
+  /* Outline variant: transparent bg → hover fill with foreground color */
+  .btn-fill-outline {
+    background-image: linear-gradient(var(--foreground), var(--foreground));
+    background-size: 100% 0%;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    background-color: transparent;
+    color: var(--foreground);
+    transition: background-size 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                color 0.3s ease;
+  }
+  .btn-fill-outline:hover,
+  .btn-fill-outline:focus-visible {
+    background-size: 100% 100%;
+    color: var(--background);
+  }
+
+  /* Ghost variant */
+  .btn-fill-ghost {
+    background-image: linear-gradient(var(--foreground), var(--foreground));
+    background-size: 100% 0%;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    background-color: transparent;
+    color: var(--muted-foreground);
+    transition: background-size 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                color 0.3s ease;
+  }
+  .btn-fill-ghost:hover,
+  .btn-fill-ghost:focus-visible {
+    background-size: 100% 100%;
+    color: var(--background);
+  }
+
+  /* Inverted variant — for use on dark/inverted section backgrounds */
+  /* starts transparent with light text, fills light on hover → dark text */
+  .btn-fill-inverted {
+    background-image: linear-gradient(var(--background), var(--background));
+    background-size: 100% 0%;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    background-color: transparent;
+    color: var(--background);
+    transition: background-size 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                color 0.3s ease;
+  }
+  .btn-fill-inverted:hover,
+  .btn-fill-inverted:focus-visible {
+    background-size: 100% 100%;
+    color: var(--foreground);
+  }
+
+  /* Tag fill-from-bottom — for pill tags */
+  .tag-fill {
+    background-image: linear-gradient(var(--foreground), var(--foreground));
+    background-size: 100% 0%;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    background-color: transparent;
+    transition: background-size 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                color 0.25s ease,
+                border-color 0.25s ease;
+  }
+  .tag-fill:hover {
+    background-size: 100% 100%;
+    color: var(--background);
+    border-color: var(--foreground);
+  }
 }
