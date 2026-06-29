@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import HeroSection         from "@/components/sections/home/HeroSection";
 import AboutPreview        from "@/components/sections/home/AboutPreview";
 import ServicesPreview     from "@/components/sections/home/ServicesPreview";
@@ -10,6 +11,18 @@ import FAQSection          from "@/components/sections/home/FAQSection";
 import CTABanner           from "@/components/sections/home/CTABanner";
 import MarqueeStrip        from "@/components/ui/MarqueeStrip";
 import { services }        from "@/data/data";
+
+export const metadata: Metadata = {
+  title: "AshRam — Software Development Studio in India",
+  description:
+    "AshRam builds web apps, mobile apps, and SaaS products for startups and businesses. Clean code, on-time delivery. Based in Hyderabad, India.",
+  alternates: { canonical: "https://ashram-agency.vercel.app" },
+  openGraph: {
+    title:       "AshRam — Software Development Studio",
+    description: "Web apps, mobile apps, and SaaS products built for startups. Based in Hyderabad, India.",
+    url:         "https://ashram-agency.vercel.app",
+  },
+};
 
 export default function HomePage() {
   const serviceNames = services.map((s) => s.title);
