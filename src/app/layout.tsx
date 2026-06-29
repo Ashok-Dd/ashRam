@@ -100,7 +100,7 @@ export const metadata: Metadata = {
 
   // ── Replace the value below after verifying in Google Search Console ────────
   verification: {
-    google: "SvscgnnD8Z493O61OcxlHF26QrUP7cUt3V6Nsurv5A8",
+    google: "jGdWCUUJTV6jdgdUdBo2KgFF9T75h93GpBx7og0kBZY",
   },
 
   icons: {
