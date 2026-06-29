@@ -28,7 +28,8 @@ export default function ProcessJourney() {
   const outroRef        = useRef<HTMLDivElement>(null);
   const logoLandingRef  = useRef<HTMLDivElement>(null);
   const nodeRefs        = useRef<(HTMLDivElement | null)[]>([]);
-  const fillRefs        = useRef<(HTMLDivElement | null)[]>([]);
+  const pathRefs        = useRef<(SVGPathElement | null)[]>([]);
+  const dotPathRefs     = useRef<(SVGPathElement | null)[]>([]);
 
   useEffect(() => {
     const mm = gsap.matchMedia();
@@ -45,7 +46,8 @@ export default function ProcessJourney() {
 
       if (!outer || !track || !stepsContent || !logo || !outro || !logoLanding) return;
 
-      const fills = fillRefs.current.filter(Boolean) as HTMLDivElement[];
+      const paths    = pathRefs.current.filter(Boolean) as SVGPathElement[];
+      const dotPaths = dotPathRefs.current.filter(Boolean) as SVGPathElement[];
 
       // Measure as offset from the sticky container's top edge, NOT the viewport.
       // At setup time the section hasn't started sticking yet, so the sticky
@@ -81,7 +83,8 @@ export default function ProcessJourney() {
       };
 
       const ctx = gsap.context(() => {
-        gsap.set(fills, { scaleX: 0, transformOrigin: "left center" });
+        gsap.set(paths,    { attr: { "stroke-dashoffset": 1 } });
+        gsap.set(dotPaths, { attr: { "stroke-dashoffset": 1 } });
         gsap.set(outro, { opacity: 0 });
 
         const tl = gsap.timeline({
@@ -102,10 +105,21 @@ export default function ProcessJourney() {
           invalidateOnRefresh: true,
         }, 0);
 
-        fills.forEach((fill, i) => {
+        paths.forEach((path, i) => {
           const segStart = 0.1 + i * 0.7;
           const segEnd   = segStart + 0.55;
-          tl.to(fill, { scaleX: 1, ease: "none", duration: segEnd - segStart }, segStart);
+          tl.to(path, { attr: { "stroke-dashoffset": 0 }, ease: "none", duration: segEnd - segStart }, segStart);
+
+          // Traveling segment — leads the drawn stroke
+          if (dotPaths[i]) {
+            tl.fromTo(
+              dotPaths[i],
+              { attr: { "stroke-dashoffset": "0" } },
+              { attr: { "stroke-dashoffset": "-0.95" }, ease: "none", duration: segEnd - segStart },
+              segStart,
+            );
+          }
+
           const nextNode = nodeRefs.current[i + 1];
           if (nextNode) {
             tl.to(nextNode, {
@@ -195,11 +209,11 @@ export default function ProcessJourney() {
             {/* Steps content — fades out in Phase 2 while logo stays */}
             <div ref={stepsContentRef} className="flex items-start">
               {/* Intro panel */}
-              <div className="w-72 shrink-0 mr-24 -mt-6">
+              <div className="w-80 shrink-0 mr-28 -mt-4">
                 <p className="text-xs font-medium uppercase tracking-[0.3em] text-muted-foreground mb-5">
                   How We Work
                 </p>
-                <h2 className="font-heading text-[clamp(1.8rem,3vw,2.8rem)] text-foreground leading-tight mb-6">
+                <h2 className="font-heading text-[clamp(2rem,3.5vw,3.5rem)] text-foreground leading-tight mb-8">
                   From Brief<br />to Build.
                 </h2>
                 <p className="text-xs text-muted-foreground/40 flex items-center gap-2">
@@ -208,15 +222,19 @@ export default function ProcessJourney() {
                 </p>
               </div>
 
-              {/* Step nodes + connecting path segments */}
+              {/* Step nodes + curvy SVG connectors */}
               {about.process.map((step, i) => (
                 <React.Fragment key={step.step}>
-                  <div className="shrink-0 flex flex-col items-center w-52">
+                  {/* Odd-indexed steps drop 64 px to create the wave */}
+                  <div
+                    className="shrink-0 flex flex-col items-center w-64"
+                    style={{ marginTop: i % 2 !== 0 ? "64px" : "0" }}
+                  >
                     <div
                       ref={(el) => { nodeRefs.current[i] = el; }}
                       className={[
-                        "w-12 h-12 rounded-full border flex items-center justify-center",
-                        "text-xs font-medium transition-colors duration-300",
+                        "w-14 h-14 rounded-full border flex items-center justify-center",
+                        "text-xs font-medium tracking-widest transition-colors duration-300",
                         i === 0
                           ? "bg-foreground text-background border-foreground"
                           : "border-foreground/20 text-muted-foreground",
@@ -224,27 +242,69 @@ export default function ProcessJourney() {
                     >
                       {step.step}
                     </div>
-                    <div className="mt-7 text-center px-2">
-                      <h3 className="font-heading text-xl text-foreground mb-2 leading-tight">
+                    <div className="mt-8 text-center px-4">
+                      <h3 className="font-heading text-2xl text-foreground mb-3 leading-tight">
                         {step.title}
                       </h3>
-                      <p className="text-xs text-muted-foreground font-light leading-relaxed">
+                      <p className="text-sm text-muted-foreground font-light leading-relaxed">
                         {step.body}
                       </p>
                     </div>
                   </div>
 
+                  {/* Curvy bezier connector between steps */}
                   {i < about.process.length - 1 && (
                     <div
-                      className="shrink-0 relative"
-                      style={{ width: "6rem", height: "1px", marginTop: "23px" }}
+                      className="shrink-0 self-start relative"
+                      style={{ width: "140px", height: "56px" }}
                       aria-hidden="true"
                     >
-                      <div className="absolute inset-0 bg-foreground/12" />
-                      <div
-                        ref={(el) => { fillRefs.current[i] = el; }}
-                        className="absolute inset-0 bg-foreground"
-                      />
+                      <svg
+                        width="140"
+                        height="140"
+                        viewBox="0 0 140 140"
+                        fill="none"
+                        style={{ position: "absolute", top: 0, left: 0, overflow: "visible" }}
+                      >
+                        {/* faint base path — always visible */}
+                        <path
+                          d={i % 2 === 0
+                            ? "M 0,28 C 70,28 70,92 140,92"
+                            : "M 0,92 C 70,92 70,28 140,28"}
+                          stroke="var(--foreground)"
+                          strokeOpacity="0.1"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                        />
+                        {/* animated draw path */}
+                        <path
+                          ref={(el) => { pathRefs.current[i] = el; }}
+                          d={i % 2 === 0
+                            ? "M 0,28 C 70,28 70,92 140,92"
+                            : "M 0,92 C 70,92 70,28 140,28"}
+                          pathLength="1"
+                          strokeDasharray="1"
+                          strokeDashoffset="1"
+                          stroke="var(--foreground)"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          fill="none"
+                        />
+                        {/* traveling segment — bright thick cap that leads the draw */}
+                        <path
+                          ref={(el) => { dotPathRefs.current[i] = el; }}
+                          d={i % 2 === 0
+                            ? "M 0,28 C 70,28 70,92 140,92"
+                            : "M 0,92 C 70,92 70,28 140,28"}
+                          pathLength="1"
+                          strokeDasharray="0.05 1"
+                          strokeDashoffset="1"
+                          stroke="var(--foreground)"
+                          strokeWidth="5"
+                          strokeLinecap="round"
+                          fill="none"
+                        />
+                      </svg>
                     </div>
                   )}
                 </React.Fragment>

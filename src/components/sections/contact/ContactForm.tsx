@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { contact } from "@/data/data";
 import SectionReveal from "@/components/ui/SectionReveal";
+import { FaInstagram, FaBehance, FaLinkedinIn, FaXTwitter } from "react-icons/fa6";
 
 const schema = z.object({
   name:    z.string().min(2, "Name must be at least 2 characters"),
@@ -44,7 +45,11 @@ function FloatingField({
       onBlur={() => setFocused(false)}
     >
       <motion.label
-        animate={lifted ? { y: -18, scale: 0.8, color: "var(--foreground)" } : { y: 0, scale: 1, color: "var(--muted-foreground)" }}
+        animate={
+          lifted
+            ? { y: -18, scale: 0.8, color: "var(--foreground)" }
+            : { y: 0, scale: 1, color: "var(--muted-foreground)" }
+        }
         transition={{ duration: 0.25 }}
         className="absolute left-0 top-4 text-sm font-light origin-left pointer-events-none will-gpu"
         style={{ transformOrigin: "left" }}
@@ -56,6 +61,12 @@ function FloatingField({
   );
 }
 
+const infoRows = [
+  { label: "Email",    getValue: () => contact.email,   getHref: () => `mailto:${contact.email}` },
+  { label: "Phone",    getValue: () => contact.phone,   getHref: () => `tel:${contact.phone}` },
+  { label: "Location", getValue: () => contact.address, getHref: () => null },
+] as const;
+
 export default function ContactForm() {
   const [submitted, setSubmitted] = useState(false);
 
@@ -65,7 +76,6 @@ export default function ContactForm() {
   });
 
   const onSubmit = async (_data: FormData) => {
-    // Simulate async submit
     await new Promise((r) => setTimeout(r, 800));
     setSubmitted(true);
   };
@@ -73,74 +83,119 @@ export default function ContactForm() {
   const w = form.watch();
 
   return (
-    <section className="bg-background py-24 md:py-32">
+    <section className="bg-background border-t border-border">
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-          {/* Left: info */}
-          <SectionReveal>
-            <p className="text-xs font-medium uppercase tracking-[0.3em] text-muted-foreground mb-8">
-              Get In Touch
+
+        {/* Meta row */}
+        <SectionReveal>
+          <div className="flex items-center justify-between py-7 border-b border-border">
+            <p className="text-[10px] font-medium uppercase tracking-[0.35em] text-muted-foreground">
+              Start a Project
             </p>
-            <h2 className="font-heading text-[clamp(2rem,5vw,4rem)] text-foreground mb-10">
-              Let&apos;s Start a Conversation.
-            </h2>
+            <p className="text-[10px] font-medium uppercase tracking-[0.35em] text-muted-foreground">
+              {contact.email}
+            </p>
+          </div>
+        </SectionReveal>
 
-            <div className="space-y-6 mb-12">
-              <div>
-                <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Email</p>
-                <a href={`mailto:${contact.email}`} className="text-base text-foreground hover:text-muted-foreground transition-colors">
-                  {contact.email}
-                </a>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Phone</p>
-                <a href={`tel:${contact.phone}`} className="text-base text-foreground hover:text-muted-foreground transition-colors">
-                  {contact.phone}
-                </a>
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Location</p>
-                <p className="text-base text-foreground">{contact.address}</p>
-              </div>
-            </div>
+        {/* Main grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-16 lg:gap-24 py-20 md:py-28">
 
+          {/* Left: studio info */}
+          <SectionReveal>
             <div>
-              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-4">Follow</p>
-              <div className="flex gap-6">
-                {contact.socials.map((s) => (
-                  <a
-                    key={s.platform}
-                    href={s.url}
-                    className="text-xs font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors duration-200"
-                  >
-                    {s.platform}
-                  </a>
-                ))}
+              {/* Availability badge */}
+              <div className="inline-flex items-center gap-2.5 border border-border px-4 py-2.5 text-[10px] font-medium uppercase tracking-[0.28em] text-muted-foreground mb-10">
+                <span className="w-1.5 h-1.5 rounded-full bg-foreground/60 shrink-0" />
+                {contact.availability}
+              </div>
+
+              <h2 className="font-heading text-[clamp(1.9rem,3.5vw,3.2rem)] text-foreground leading-[1.05] tracking-tight mb-12">
+                We&apos;d love to hear<br />about your project.
+              </h2>
+
+              {/* Contact detail rows */}
+              <div className="border-t border-border mb-8">
+                {infoRows.map(({ label, getValue, getHref }) => {
+                  const value = getValue();
+                  const href  = getHref();
+                  return (
+                    <div
+                      key={label}
+                      className="flex items-center justify-between py-5 border-b border-border"
+                    >
+                      <span className="text-[10px] font-medium uppercase tracking-[0.28em] text-muted-foreground">
+                        {label}
+                      </span>
+                      {href ? (
+                        <a
+                          href={href}
+                          className="text-sm text-foreground hover:text-muted-foreground transition-colors duration-200"
+                        >
+                          {value}
+                        </a>
+                      ) : (
+                        <span className="text-sm text-foreground">{value}</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Social icon links */}
+              <div className="flex items-center gap-3">
+                {contact.socials.map((s) => {
+                  const Icon =
+                    s.platform === "Instagram" ? FaInstagram :
+                    s.platform === "Behance"   ? FaBehance   :
+                    s.platform === "LinkedIn"  ? FaLinkedinIn :
+                                                 FaXTwitter;
+                  return (
+                    <Button
+                      key={s.platform}
+                      asChild
+                      variant="outline"
+                      size="icon"
+                    >
+                      <a
+                        href={s.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={s.platform}
+                      >
+                        <Icon size={15} />
+                      </a>
+                    </Button>
+                  );
+                })}
               </div>
             </div>
           </SectionReveal>
 
           {/* Right: form */}
-          <SectionReveal delay={0.15}>
+          <SectionReveal delay={0.12}>
             <AnimatePresence mode="wait">
               {submitted ? (
                 <motion.div
                   key="success"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex flex-col justify-center h-full min-h-80"
+                  className="flex flex-col justify-center min-h-80"
                 >
                   <div className="w-10 h-px bg-foreground mb-8" />
-                  <h3 className="font-heading text-3xl text-foreground mb-4">Message Received.</h3>
+                  <h3 className="font-heading text-3xl text-foreground mb-4">
+                    Message Received.
+                  </h3>
                   <p className="text-base text-muted-foreground font-light leading-relaxed">
-                    Thank you for reaching out. We typically respond within one business day.
-                    We're looking forward to learning more about your project.
+                    Thank you for reaching out. We typically respond within one business day
+                    and look forward to learning more about your project.
                   </p>
                 </motion.div>
               ) : (
                 <motion.div key="form" initial={{ opacity: 1 }} exit={{ opacity: 0 }}>
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+
                       <FormField
                         control={form.control}
                         name="name"
@@ -158,6 +213,7 @@ export default function ContactForm() {
                           </FormItem>
                         )}
                       />
+
                       <FormField
                         control={form.control}
                         name="email"
@@ -176,6 +232,7 @@ export default function ContactForm() {
                           </FormItem>
                         )}
                       />
+
                       <FormField
                         control={form.control}
                         name="company"
@@ -192,6 +249,7 @@ export default function ContactForm() {
                           </FormItem>
                         )}
                       />
+
                       <FormField
                         control={form.control}
                         name="message"
@@ -201,7 +259,7 @@ export default function ContactForm() {
                               <FormControl>
                                 <Textarea
                                   {...field}
-                                  rows={4}
+                                  rows={5}
                                   className="border-0 border-none shadow-none focus-visible:ring-0 rounded-none bg-transparent pt-6 pb-2 px-0 text-foreground resize-none"
                                 />
                               </FormControl>
@@ -210,20 +268,25 @@ export default function ContactForm() {
                           </FormItem>
                         )}
                       />
-                      <Button
-                        type="submit"
-                        disabled={form.formState.isSubmitting}
-                        size="lg"
-                        className="uppercase tracking-wider text-xs w-full md:w-auto px-12"
-                      >
-                        {form.formState.isSubmitting ? "Sending…" : "Send Message"}
-                      </Button>
+
+                      <div className="pt-4">
+                        <Button
+                          type="submit"
+                          disabled={form.formState.isSubmitting}
+                          size="lg"
+                          className="uppercase tracking-wider text-xs w-full sm:w-auto px-14"
+                        >
+                          {form.formState.isSubmitting ? "Sending…" : "Send Message"}
+                        </Button>
+                      </div>
+
                     </form>
                   </Form>
                 </motion.div>
               )}
             </AnimatePresence>
           </SectionReveal>
+
         </div>
       </div>
     </section>

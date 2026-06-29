@@ -18,9 +18,19 @@ export default function HomePage() {
       <HeroSection />
 
       {/* Services ticker strip */}
-      <div className="border-b border-t border-border py-4 bg-surface">
-        <MarqueeStrip items={serviceNames} speed={35} />
-      </div>
+      <section className="relative overflow-hidden bg-foreground" aria-label="Services">
+        {/* Edge gradient fades */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-28 z-10 bg-linear-to-r from-foreground to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-28 z-10 bg-linear-to-l from-foreground to-transparent" />
+        <div className="py-5">
+          <MarqueeStrip
+            items={serviceNames}
+            speed={20}
+            separator="/"
+            itemClassName="text-[11px] font-medium uppercase tracking-[0.28em] text-background/50"
+          />
+        </div>
+      </section>
 
       <AboutPreview />
       <ServicesPreview />
