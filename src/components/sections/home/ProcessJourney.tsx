@@ -41,13 +41,18 @@ export default function ProcessJourney() {
       const outro        = outroRef.current;
       const logoLanding  = logoLandingRef.current;
 
+      const sticky = stickyRef.current!;
+
       if (!outer || !track || !stepsContent || !logo || !outro || !logoLanding) return;
 
       const fills = fillRefs.current.filter(Boolean) as HTMLDivElement[];
 
-      // Logo's natural viewport top — captured once before any GSAP transforms.
-      // Track has no vertical translation so this stays constant during Phase 1.
-      const logoNaturalTop = logo.getBoundingClientRect().top;
+      // Measure as offset from the sticky container's top edge, NOT the viewport.
+      // At setup time the section hasn't started sticking yet, so the sticky
+      // container could be 1000px below the viewport — viewport-based measurements
+      // would be completely wrong. Offset-from-sticky is constant and correct.
+      const logoNaturalTop =
+        logo.getBoundingClientRect().top - sticky.getBoundingClientRect().top;
 
       // How far the track must slide left to centre the logo.
       // Compensates for any GSAP x already on the track so it's safe on refresh.
@@ -59,19 +64,19 @@ export default function ProcessJourney() {
         return Math.max(0, naturalLeft + logoW / 2 - window.innerWidth / 2);
       };
 
-      // Phase 3 target — where logo.x / logo.y must be (in track coords) for the
-      // logo to appear over the landing element in the outro panel.
+      // Phase 3 target — where logo.x / logo.y must be (in track coords) so the
+      // logo appears exactly over the static landing logo in the outro panel.
       //
-      // Because the track has `position:absolute left:0` and no y-translation,
-      // logo's viewport x = logo.naturalLeft + track.x + logo.x_gsap
-      // After Phase 1: logo.naturalLeft + track.x = vw/2 - 55  (centred)
-      // So target logo.x_gsap = landing.left - (vw/2 - 55) = landing.left - vw/2 + 55
-      //    target logo.y_gsap = landing.top  - logoNaturalTop
+      // All Y values are expressed as offsets from the sticky container top so the
+      // calculation is correct whether called during sticking or on early refresh.
       const getFlyEndInTrack = () => {
         const r = logoLanding.getBoundingClientRect();
+        const stickyTop = sticky.getBoundingClientRect().top;
         return {
+          // X: logo is centred (vw/2 - 55) after Phase 1; shift to landing.left
           x: r.left - window.innerWidth / 2 + 55,
-          y: r.top  - logoNaturalTop,
+          // Y: offset of landing from sticky top, minus offset of logo from sticky top
+          y: (r.top - stickyTop) - logoNaturalTop,
         };
       };
 
@@ -113,26 +118,35 @@ export default function ProcessJourney() {
           }
         });
 
-        // ── Phase 2 (3.4 → 5): logo expands; steps fade ─────────────────────
-        // Small gap 3 → 3.4 gives breathing room after the scroll stops.
-        tl.to(logo, { scale: 8, ease: "power2.in", duration: 1.5 }, 3.4);
+        // ── Phase 2 (3.4 → 5.0): logo expands to fill screen ───────────────
+        // 110px × 16 = 1760px — wider than any typical viewport.
+        tl.to(logo, { scale: 8, ease: "power3.in", duration: 1.6 }, 3.4);
         tl.to(stepsContent, { opacity: 0, ease: "power1.in", duration: 0.8 }, 3.8);
 
-        // ── Phase 3 (4.9 → 6.9): logo flies from centre to landing spot ──────
+        // ── Hold (5.0 → 5.5): logo sits at full scale so the expansion reads ─
+        // No tween needed — the timeline just advances with the logo frozen.
+
+        // Outro dark panel fades in while logo is still large (5.0 → 6.2)
+        tl.to(outro, { opacity: 1, ease: "power1.out", duration: 1.2 }, 5.0);
+
+        // ── Phase 3 (5.5 → 7.5): logo shrinks and settles at landing spot ───
+        // Position and scale use separate tweens so each has its own easing.
         tl.to(logo, {
           x: () => getFlyEndInTrack().x,
           y: () => getFlyEndInTrack().y,
-          scale: 1,
           ease: "power3.inOut",
           duration: 2,
           invalidateOnRefresh: true,
-        }, 4.9);
+        }, 5.5);
 
-        tl.to(logo, { filter: "invert(1)", ease: "none", duration: 0.4 }, 5.6);
-        tl.to(outro, { opacity: 1, ease: "power2.out", duration: 1.5 }, 5.2);
+        // back.out overshoot gives the final "settle" feel
+        tl.to(logo, { scale: 1, ease: "back.out(1.6)", duration: 2 }, 5.5);
 
-        // ── Phase 4 (6.9 → 7.4): animated logo hands off to static logo ──────
-        tl.to(logo, { opacity: 0, duration: 0.5 }, 6.9);
+        // Filter inverts as logo shrinks onto the dark outro background
+        tl.to(logo, { filter: "invert(1)", ease: "none", duration: 0.5 }, 5.7);
+
+        // ── Phase 4 (7.5 → 8.0): animated logo hands off to static logo ─────
+        tl.to(logo, { opacity: 0, duration: 0.5 }, 7.5);
       });
 
       const onLoad = () => ScrollTrigger.refresh();
@@ -166,9 +180,11 @@ export default function ProcessJourney() {
         >
 
           {/* ── Horizontal track ─────────────────────────────────────────────── */}
+          {/* z-[2] keeps the logo above the outro panel during the fly animation.
+              pointer-events-none lets clicks through to the outro CTA. */}
           <div
             ref={trackRef}
-            className="absolute inset-0 flex items-start will-gpu"
+            className="absolute inset-0 flex items-start will-gpu z-2 pointer-events-none"
             style={{
               paddingLeft:  "max(10vw, 3rem)",
               paddingRight: "50vw",
