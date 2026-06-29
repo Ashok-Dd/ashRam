@@ -27,8 +27,9 @@ export const metadata: Metadata = {
   },
   description: agency.description,
   icons: {
-    icon: agency.logoLight,
-    shortcut: agency.logoLight,
+    icon:     { url: agency.logoDark, type: "image/png", sizes: "any" },
+    shortcut: { url: agency.logoDark, type: "image/png" },
+    apple:    { url: agency.logoDark, type: "image/png" },
   },
   openGraph: {
     title: agency.name,
