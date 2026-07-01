@@ -1,34 +1,73 @@
+"use client";
+
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import SectionReveal from "@/components/ui/SectionReveal";
-import { agency, contact } from "@/data/data";
+import MagneticButton from "@/components/ui/MagneticButton";
+import { contact } from "@/data/data";
 
 export default function CTABanner() {
   return (
-    <section className="bg-foreground text-background py-24 md:py-36">
-      <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 text-center">
-        <SectionReveal>
-          <p className="text-xs font-medium uppercase tracking-[0.3em] text-background/40 mb-8">
-            Ready to Start?
-          </p>
-          <h2 className="font-heading text-[clamp(2.5rem,8vw,7rem)] text-background mb-10 max-w-4xl mx-auto">
-            Let&apos;s Build Something Remarkable.
-          </h2>
-          <p className="text-base text-background/60 font-light max-w-lg mx-auto mb-12 leading-relaxed">
-            {contact.availability}. Tell us what you&apos;re building and we&apos;ll tell you how we can help.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <Button asChild size="lg" variant="inverted">
-              <Link href="/contact">Let&apos;s Talk</Link>
-            </Button>
-            <a
-              href={`mailto:${contact.email}`}
-              className="text-sm text-background/50 hover:text-background transition-colors duration-300 underline underline-offset-4"
+    <section
+      className="relative overflow-hidden"
+      style={{ background: "#080808", paddingTop: "clamp(6rem,12vw,10rem)", paddingBottom: "clamp(6rem,12vw,10rem)" }}
+    >
+      {/* Subtle noise grain */}
+      <div className="hero-grain absolute inset-0 pointer-events-none" aria-hidden="true" />
+
+      <div className="relative max-w-7xl mx-auto px-6 md:px-12 lg:px-20 text-center">
+
+        {/* Eyebrow */}
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <span
+            className="w-2 h-2 rounded-full animate-pulse"
+            style={{ background: "#4ade80" }}
+            aria-hidden="true"
+          />
+          <span
+            className="text-[9px] uppercase tracking-[0.35em] font-medium"
+            style={{ color: "rgba(240,240,240,0.35)" }}
+          >
+            {contact.availability}
+          </span>
+        </div>
+
+        {/* Heading */}
+        <h2
+          className="font-heading leading-[0.92] tracking-[-0.02em] mb-10"
+          style={{ fontSize: "clamp(3rem,8vw,7.5rem)", color: "rgba(240,240,240,0.92)" }}
+        >
+          Let&apos;s Build Something<br />
+          <span className="italic font-light">Remarkable.</span>
+        </h2>
+
+        <p
+          className="text-sm font-light leading-relaxed max-w-md mx-auto mb-12"
+          style={{ color: "rgba(240,240,240,0.4)" }}
+        >
+          Tell us what you&apos;re building and we&apos;ll tell you how we can help.
+        </p>
+
+        {/* Magnetic CTA */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <MagneticButton>
+            <Link
+              href="/contact"
+              className="btn-fill-outline group inline-flex items-center gap-3 px-8 py-4 text-[10px] uppercase tracking-[0.25em] font-medium border border-white/25"
             >
-              {contact.email}
-            </a>
-          </div>
-        </SectionReveal>
+              Let&apos;s Talk
+              <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+            </Link>
+          </MagneticButton>
+
+          <a
+            href={`mailto:${contact.email}`}
+            className="text-[11px] transition-colors duration-300"
+            style={{ color: "rgba(240,240,240,0.3)" }}
+            onMouseEnter={e => (e.currentTarget.style.color = "rgba(240,240,240,0.75)")}
+            onMouseLeave={e => (e.currentTarget.style.color = "rgba(240,240,240,0.3)")}
+          >
+            {contact.email}
+          </a>
+        </div>
       </div>
     </section>
   );

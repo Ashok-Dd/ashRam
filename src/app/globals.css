@@ -2,9 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
-
-/* ── Design Tokens ───────────────────────────────────────────────────────── */
+/* ── Single permanent dark theme — no toggle ──────────────────────────────── */
 
 @theme inline {
   --color-background:          var(--background);
@@ -31,39 +29,13 @@
   --color-surface: var(--surface);
   --color-divider: var(--divider);
 
-  --font-sans:    var(--font-inter);
-  --font-heading: var(--font-cormorant);
+  --font-sans:    "Satoshi", system-ui, sans-serif;
+  --font-heading: "Clash Display", sans-serif;
 }
 
-/* ── Light Theme ─────────────────────────────────────────────────────────── */
+/* ── Dark theme (permanent) ──────────────────────────────────────────────── */
 
 :root {
-  --background:           oklch(0.985 0 0);
-  --foreground:           oklch(0.09 0 0);
-  --card:                 oklch(0.97 0 0);
-  --card-foreground:      oklch(0.09 0 0);
-  --popover:              oklch(0.97 0 0);
-  --popover-foreground:   oklch(0.09 0 0);
-  --primary:              oklch(0.09 0 0);
-  --primary-foreground:   oklch(0.985 0 0);
-  --secondary:            oklch(0.93 0 0);
-  --secondary-foreground: oklch(0.09 0 0);
-  --muted:                oklch(0.93 0 0);
-  --muted-foreground:     oklch(0.45 0 0);
-  --accent:               oklch(0.93 0 0);
-  --accent-foreground:    oklch(0.09 0 0);
-  --destructive:          oklch(0.577 0.245 27.325);
-  --border:               oklch(0.87 0 0);
-  --input:                oklch(0.87 0 0);
-  --ring:                 oklch(0.55 0 0);
-  --radius:               0.25rem;
-  --surface:              #F0EEE9;
-  --divider:              #E2E0DB;
-}
-
-/* ── Dark Theme ──────────────────────────────────────────────────────────── */
-
-.dark {
   --background:           oklch(0.07 0 0);
   --foreground:           oklch(0.96 0 0);
   --card:                 oklch(0.11 0 0);
@@ -82,6 +54,7 @@
   --border:               oklch(1 0 0 / 8%);
   --input:                oklch(1 0 0 / 12%);
   --ring:                 oklch(0.45 0 0);
+  --radius:               0.25rem;
   --surface:              #111111;
   --divider:              #1E1E1E;
 }
@@ -98,6 +71,28 @@
   to   { transform: translateX(0); }
 }
 
+/* Animated film-grain texture for hero overlay */
+@keyframes grain-shift {
+  0%   { transform: translate(0,    0   ); }
+  25%  { transform: translate(-2px,  1px); }
+  50%  { transform: translate( 2px, -1px); }
+  75%  { transform: translate(-1px,  2px); }
+  100% { transform: translate( 1px, -2px); }
+}
+
+/* Scroll indicator bar fill-from-top pulse */
+@keyframes scroll-pulse {
+  0%   { transform: scaleY(0.1); opacity: 0.7; }
+  70%  { transform: scaleY(1);   opacity: 0.3; }
+  100% { transform: scaleY(1);   opacity: 0;   }
+}
+
+/* Scroll progress bar width fill */
+@keyframes progress-fill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
 /* ── Base Styles ─────────────────────────────────────────────────────────── */
 
 @layer base {
@@ -106,7 +101,7 @@
   }
 
   html {
-    font-family: var(--font-inter), system-ui, sans-serif;
+    font-family: "Satoshi", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -119,7 +114,7 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-cormorant), Georgia, serif;
+    font-family: "Clash Display", sans-serif;
     line-height: 1.1;
   }
 
@@ -133,7 +128,7 @@
 
 @layer utilities {
   .font-heading {
-    font-family: var(--font-cormorant), Georgia, serif;
+    font-family: "Clash Display", sans-serif;
   }
 
   .will-gpu {
@@ -153,19 +148,87 @@
     animation: marquee-scroll-reverse var(--marquee-duration, 30s) linear infinite;
   }
 
-  /* ── Button fill-from-bottom animation ────────────────────────────────── */
+  /* ── Hero grain overlay ──────────────────────────────────────────────── */
 
-  /* Default variant: foreground bg → hover fill with background color */
+  /*
+    SVG feTurbulence noise pattern, tiled and animated to simulate
+    analogue film grain. Applied as a decorative overlay on dark sections.
+  */
+  .hero-grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+    opacity: 0.04;
+    animation: grain-shift 0.45s steps(2) infinite;
+  }
+
+  /* ── Spotlight card — cursor-reactive radial gradient ────────────────── */
+
+  /*
+    CSS custom properties --mx / --my are set via JavaScript on mousemove.
+    Creates a subtle light source that follows the cursor inside the card.
+  */
+  .spotlight-card {
+    background: radial-gradient(
+      circle var(--sr, 200px) at var(--mx, 50%) var(--my, -30%),
+      rgba(255, 255, 255, 0.045),
+      transparent 70%
+    ), var(--card);
+  }
+
+  /* ── Cursor label pill ───────────────────────────────────────────────── */
+
+  .cursor-label {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 9997;
+    padding: 4px 10px;
+    background: oklch(0.96 0 0);
+    color: oklch(0.07 0 0);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border-radius: 2px;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+    white-space: nowrap;
+  }
+
+  .cursor-label.visible {
+    opacity: 1;
+  }
+
+  /* ── Button system — rounded pill, slide-fill on hover ─────────────────── */
+  /*
+    All variants share the same pill shape and overflow:hidden so the
+    background-size slide looks clean on rounded corners.
+    Fill direction: bottom → top (background-position: 0 100%).
+  */
+
+  .btn-fill-default,
+  .btn-fill-outline,
+  .btn-fill-ghost,
+  .btn-fill-inverted {
+    border-radius: 9999px;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    cursor: pointer;
+  }
+
+  /* Solid white pill → fills dark on hover */
   .btn-fill-default {
     background-image: linear-gradient(var(--background), var(--background));
     background-size: 100% 0%;
-    background-position: 0 100%;
-    background-repeat: no-repeat;
     background-color: var(--foreground);
     color: var(--background);
-    transition: background-size 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                color 0.3s ease,
-                border-color 0.3s ease;
+    transition: background-size 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                color 0.28s ease;
   }
   .btn-fill-default:hover,
   .btn-fill-default:focus-visible {
@@ -173,16 +236,14 @@
     color: var(--foreground);
   }
 
-  /* Outline variant: transparent bg → hover fill with foreground color */
+  /* Outline pill → fills white on hover, text becomes dark */
   .btn-fill-outline {
     background-image: linear-gradient(var(--foreground), var(--foreground));
     background-size: 100% 0%;
-    background-position: 0 100%;
-    background-repeat: no-repeat;
     background-color: transparent;
     color: var(--foreground);
-    transition: background-size 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                color 0.3s ease;
+    transition: background-size 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                color 0.28s ease;
   }
   .btn-fill-outline:hover,
   .btn-fill-outline:focus-visible {
@@ -190,16 +251,14 @@
     color: var(--background);
   }
 
-  /* Ghost variant */
+  /* Ghost (muted text) → same fill as outline */
   .btn-fill-ghost {
     background-image: linear-gradient(var(--foreground), var(--foreground));
     background-size: 100% 0%;
-    background-position: 0 100%;
-    background-repeat: no-repeat;
     background-color: transparent;
     color: var(--muted-foreground);
-    transition: background-size 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                color 0.3s ease;
+    transition: background-size 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                color 0.28s ease;
   }
   .btn-fill-ghost:hover,
   .btn-fill-ghost:focus-visible {
@@ -207,17 +266,14 @@
     color: var(--background);
   }
 
-  /* Inverted variant — for use on dark/inverted section backgrounds */
-  /* starts transparent with light text, fills light on hover → dark text */
+  /* Inverted — for light section backgrounds */
   .btn-fill-inverted {
     background-image: linear-gradient(var(--background), var(--background));
     background-size: 100% 0%;
-    background-position: 0 100%;
-    background-repeat: no-repeat;
     background-color: transparent;
     color: var(--background);
-    transition: background-size 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                color 0.3s ease;
+    transition: background-size 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+                color 0.28s ease;
   }
   .btn-fill-inverted:hover,
   .btn-fill-inverted:focus-visible {
@@ -225,14 +281,16 @@
     color: var(--foreground);
   }
 
-  /* Tag fill-from-bottom — for pill tags */
+  /* Tag pill — same slide fill */
   .tag-fill {
+    border-radius: 9999px;
+    overflow: hidden;
     background-image: linear-gradient(var(--foreground), var(--foreground));
     background-size: 100% 0%;
     background-position: 0 100%;
     background-repeat: no-repeat;
     background-color: transparent;
-    transition: background-size 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transition: background-size 0.38s cubic-bezier(0.22, 1, 0.36, 1),
                 color 0.25s ease,
                 border-color 0.25s ease;
   }

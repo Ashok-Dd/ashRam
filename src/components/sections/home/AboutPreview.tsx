@@ -1,67 +1,99 @@
+"use client";
+
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import SectionReveal from "@/components/ui/SectionReveal";
+import Globe from "@/components/ui/Globe";
 import { about, agency } from "@/data/data";
 
 export default function AboutPreview() {
   return (
-    <section className="bg-background py-24 md:py-36 border-t border-border">
+    <section
+      className="relative overflow-hidden"
+      style={{ background: "#0a0a0a", paddingTop: "clamp(6rem,10vw,9rem)", paddingBottom: "clamp(5rem,8vw,7rem)" }}
+    >
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20">
 
-        {/* ── Meta row ─────────────────────────────────────────────────────── */}
+        {/* ── Eyebrow row ── */}
         <SectionReveal>
-          <div className="flex items-center justify-between pb-7 border-b border-border mb-14 md:mb-20">
-            <p className="text-[10px] font-medium uppercase tracking-[0.35em] text-muted-foreground">
+          <div
+            className="flex items-center justify-between pb-6 mb-14 md:mb-20"
+            style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
+          >
+            <p className="text-[10px] font-medium uppercase tracking-[0.35em]" style={{ color: "rgba(240,240,240,0.3)" }}>
               {about.eyebrow}
             </p>
-            <p className="text-[10px] font-medium uppercase tracking-[0.35em] text-muted-foreground">
+            <p className="text-[10px] font-medium uppercase tracking-[0.35em]" style={{ color: "rgba(240,240,240,0.3)" }}>
               Est. {agency.founded} &nbsp;·&nbsp; {agency.location}
             </p>
           </div>
         </SectionReveal>
 
-        {/* ── Large heading ────────────────────────────────────────────────── */}
-        <SectionReveal delay={0.08}>
-          <h2 className="font-heading text-[clamp(2.6rem,6.5vw,6.5rem)] text-foreground leading-[0.93] tracking-tight mb-16 md:mb-24 max-w-5xl">
-            {about.heading}
-          </h2>
-        </SectionReveal>
+        {/* ── Main grid ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 items-center">
 
-        {/* ── Content row ──────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pt-10 border-t border-border">
+          {/* Left — text content */}
+          <SectionReveal>
+            <div className="flex flex-col gap-8">
 
-          {/* Body paragraphs */}
-          <SectionReveal className="md:col-span-6" delay={0.14}>
-            <div className="space-y-5">
-              {about.body.map((para, i) => (
-                <p key={i} className="text-sm font-light text-muted-foreground leading-relaxed">
-                  {para}
-                </p>
-              ))}
-            </div>
-          </SectionReveal>
+              {/* Section heading */}
+              <h2
+                className="font-heading leading-[0.92] tracking-tight"
+                style={{ fontSize: "clamp(2.4rem,5.5vw,5rem)", color: "rgba(240,240,240,0.9)" }}
+              >
+                {about.heading}
+              </h2>
 
-          {/* Pull-quote + CTA */}
-          <SectionReveal className="md:col-span-5 md:col-start-8" delay={0.22}>
-            <div className="flex flex-col justify-between h-full gap-10">
-              {/* Manifesto pull-quote */}
-              <blockquote className="border-l-2 border-foreground/15 pl-5">
-                <p className="text-sm font-light text-muted-foreground/70 leading-relaxed">
-                  &ldquo;{about.manifesto}&rdquo;
-                </p>
+              {/* Body */}
+              <div className="space-y-4">
+                {about.body.map((para, i) => (
+                  <p key={i} className="text-sm font-light leading-relaxed" style={{ color: "rgba(240,240,240,0.45)" }}>
+                    {para}
+                  </p>
+                ))}
+              </div>
+
+              {/* Quote */}
+              <blockquote
+                className="border-l pl-5 font-light italic text-sm leading-relaxed"
+                style={{ borderColor: "rgba(255,255,255,0.12)", color: "rgba(240,240,240,0.35)" }}
+              >
+                &ldquo;{about.manifesto}&rdquo;
               </blockquote>
 
-              <Button
-                asChild
-                variant="outline"
-                className="self-start uppercase tracking-wider text-xs px-8"
-              >
-                <Link href="/about">About Us</Link>
-              </Button>
+              <div>
+                <Link
+                  href="/about"
+                  className="btn-fill-outline inline-flex items-center gap-2 px-5 py-2.5 text-[10px] uppercase tracking-[0.25em] border border-white/15"
+                >
+                  About the Studio
+                  <span>→</span>
+                </Link>
+              </div>
             </div>
           </SectionReveal>
 
+          {/* Right — interactive 3D globe */}
+          <SectionReveal delay={0.15}>
+            <div className="relative flex flex-col items-center">
+
+              {/* Glow ring behind globe */}
+              <div
+                className="absolute inset-0 rounded-full pointer-events-none"
+                style={{
+                  background: "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.04) 0%, transparent 70%)",
+                  transform: "scale(1.15)",
+                }}
+                aria-hidden="true"
+              />
+
+              {/* Globe canvas */}
+              <Globe className="w-full max-w-120 mx-auto" />
+
+
+            </div>
+          </SectionReveal>
         </div>
+
       </div>
     </section>
   );

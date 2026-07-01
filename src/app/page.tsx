@@ -48,9 +48,24 @@ export default function HomePage() {
       <AboutPreview />
       <ServicesPreview />
       <ProcessJourney />
-      <WorksPreview />
-      {/* <TrustSection /> */}
-      <TeamPreview />
+      {/*
+        Works slides left on exit, revealing Team directly underneath.
+        Team (z:1) is the persistent background layer.
+        Works sticky panel (z:2) is on top — transparent shell so Team
+        shows through the moment the inner panel sweeps left.
+        margin-top: -100vh on the works wrapper pulls it up so both
+        sections share the same viewport origin.
+      */}
+      <div style={{ position: "relative" }}>
+        {/* Team: sticky at z:1, always behind Works */}
+        <div style={{ position: "sticky", top: 0, zIndex: 1, height: "100vh", overflow: "hidden" }}>
+          <TeamPreview />
+        </div>
+        {/* Works: z:2, starts at same scroll origin as Team */}
+        <div style={{ marginTop: "-100vh", position: "relative", zIndex: 2 }}>
+          <WorksPreview />
+        </div>
+      </div>
       <TestimonialsSection />
       <FAQSection abbreviated />
       <CTABanner />

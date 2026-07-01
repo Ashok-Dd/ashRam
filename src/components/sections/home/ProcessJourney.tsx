@@ -1,8 +1,7 @@
 "use client";
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useTheme } from "next-themes";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import SectionReveal from "@/components/ui/SectionReveal";
@@ -13,12 +12,8 @@ import { about, agency, metrics } from "@/data/data";
 gsap.registerPlugin(ScrollTrigger);
 
 export default function ProcessJourney() {
-  const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-
-  const processLogo = (!mounted || resolvedTheme === "dark") ? agency.logoDark : agency.logoLight;
-  const statsLogo   = (!mounted || resolvedTheme === "dark") ? agency.logoLight : agency.logoDark;
+  const processLogo = agency.logoDark;
+  const statsLogo   = agency.logoDark;
 
   const outerRef        = useRef<HTMLElement>(null);
   const stickyRef       = useRef<HTMLDivElement>(null);

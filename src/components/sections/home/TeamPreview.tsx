@@ -1,91 +1,192 @@
+"use client";
+
+import { useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import SectionReveal from "@/components/ui/SectionReveal";
+import { gsap } from "gsap";
 import { team } from "@/data/data";
+
+function Portrait({ member, index }: { member: typeof team[0]; index: number }) {
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el || !window.matchMedia("(hover: hover)").matches) return;
+
+    const onMove = (e: MouseEvent) => {
+      const r = el.getBoundingClientRect();
+      const rx = ((e.clientY - r.top  - r.height / 2) / (r.height / 2)) * -6;
+      const ry = ((e.clientX - r.left - r.width  / 2) / (r.width  / 2)) *  6;
+      gsap.to(el, { rotateX: rx, rotateY: ry, transformPerspective: 1000, duration: 0.5, ease: "power2.out" });
+    };
+    const onLeave = () => gsap.to(el, { rotateX: 0, rotateY: 0, duration: 0.9, ease: "elastic.out(1,0.3)" });
+
+    el.addEventListener("mousemove", onMove);
+    el.addEventListener("mouseleave", onLeave);
+    return () => { el.removeEventListener("mousemove", onMove); el.removeEventListener("mouseleave", onLeave); };
+  }, []);
+
+  return (
+    <Link href="/team" className="group flex flex-col gap-5 flex-1 min-h-0">
+      {/* Portrait frame */}
+      <div
+        ref={cardRef}
+        className="relative flex-1 overflow-hidden will-change-transform"
+        style={{
+          borderRadius: "16px",
+          transformStyle: "preserve-3d",
+          minHeight: 0,
+        }}
+      >
+        <Image
+          src={member.image}
+          alt={member.name}
+          fill
+          className="object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+          sizes="(min-width:1024px) 35vw, 90vw"
+          priority
+        />
+
+        {/* Bottom gradient so info overlay is legible */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(to top, rgba(8,8,8,0.75) 0%, transparent 45%)",
+          }}
+        />
+
+        {/* Role badge — bottom-left inside the photo */}
+        <span
+          style={{
+            position: "absolute",
+            bottom: "1.25rem",
+            left: "1.25rem",
+            fontSize: "7px",
+            letterSpacing: "0.32em",
+            textTransform: "uppercase",
+            color: "rgba(240,240,240,0.55)",
+            fontFamily: '"Satoshi", sans-serif',
+          }}
+        >
+          {member.role}
+        </span>
+
+        {/* Ghost number */}
+        <span
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            bottom: "0.5rem",
+            right: "1rem",
+            fontSize: "5rem",
+            color: "rgba(255,255,255,0.05)",
+            lineHeight: 1,
+            fontFamily: '"Clash Display", sans-serif',
+            userSelect: "none",
+          }}
+        >
+          {String(index + 1).padStart(2, "0")}
+        </span>
+      </div>
+
+      {/* Name row */}
+      <div className="flex items-center justify-between shrink-0">
+        <div>
+          <h3
+            style={{
+              fontFamily: '"Clash Display", sans-serif',
+              fontSize: "clamp(1.2rem,2vw,1.75rem)",
+              color: "rgba(240,240,240,0.88)",
+              lineHeight: 1,
+              letterSpacing: "-0.015em",
+            }}
+          >
+            {member.name}
+          </h3>
+          <p style={{ fontSize: "0.78rem", color: "rgba(240,240,240,0.35)", marginTop: "0.3rem", fontFamily: '"Satoshi", sans-serif' }}>
+            {member.shortBio?.split(".")[0]}.
+          </p>
+        </div>
+        <span
+          className="transition-transform duration-300 group-hover:translate-x-1"
+          style={{ color: "rgba(240,240,240,0.2)", fontSize: "1rem" }}
+        >
+          →
+        </span>
+      </div>
+    </Link>
+  );
+}
 
 export default function TeamPreview() {
   return (
-    <section className="bg-background py-24 md:py-36 border-t border-border">
-      <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20">
+    <section
+      style={{
+        height: "100vh",
+        background: "#080808",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+        padding: "clamp(4rem,7vw,6rem) clamp(2rem,5vw,5rem) clamp(2rem,4vw,3.5rem)",
+      }}
+    >
+      {/* Top row — label + CTA */}
+      <div
+        className="flex items-center justify-between shrink-0"
+        style={{ marginBottom: "clamp(1.5rem,3vw,3rem)", borderBottom: "1px solid rgba(255,255,255,0.07)", paddingBottom: "1.25rem" }}
+      >
+        <p style={{ fontSize: "9px", letterSpacing: "0.4em", textTransform: "uppercase", color: "rgba(240,240,240,0.28)", fontFamily: '"Satoshi", sans-serif' }}>
+          The Team
+        </p>
+        <Link
+          href="/team"
+          className="hidden md:inline-flex items-center gap-2 text-[9px] uppercase tracking-[0.28em] transition-opacity duration-200 hover:opacity-80"
+          style={{ color: "rgba(240,240,240,0.3)", fontFamily: '"Satoshi", sans-serif' }}
+        >
+          Meet the full team →
+        </Link>
+      </div>
 
-        {/* Meta row */}
-        <SectionReveal>
-          <div className="flex items-center justify-between pb-7 border-b border-border mb-14 md:mb-20">
-            <p className="text-[10px] font-medium uppercase tracking-[0.35em] text-muted-foreground">
-              The Team
-            </p>
-            <p className="text-[10px] font-medium uppercase tracking-[0.35em] text-muted-foreground">
-              {team.length} Members
-            </p>
-          </div>
-        </SectionReveal>
+      {/* Main — heading left, portraits right */}
+      <div className="flex-1 flex gap-12 lg:gap-16 min-h-0 items-stretch">
 
-        {/* Heading row */}
-        <SectionReveal delay={0.06}>
-          <div className="flex items-end justify-between mb-16 md:mb-24">
-            <h2 className="font-heading text-[clamp(2.6rem,6.5vw,6.5rem)] text-foreground leading-[0.93] tracking-tight">
-              Two Minds,<br />One Obsession.
-            </h2>
-            <Button
-              asChild
-              variant="outline"
-              className="hidden md:inline-flex self-end uppercase tracking-wider text-xs px-8 mb-1"
+        {/* Left: heading block */}
+        <div className="hidden lg:flex flex-col justify-between shrink-0" style={{ width: "clamp(220px,28vw,360px)" }}>
+          <div>
+            <h2
+              className="font-heading"
+              style={{
+                fontSize: "clamp(2.4rem,4.5vw,4.5rem)",
+                color: "rgba(240,240,240,0.9)",
+                lineHeight: 0.9,
+                letterSpacing: "-0.025em",
+                marginBottom: "1.5rem",
+              }}
             >
-              <Link href="/team">Meet the Team</Link>
-            </Button>
+              Two Minds,
+              <br />
+              <em style={{ fontStyle: "normal", color: "rgba(240,240,240,0.38)" }}>One Obsession.</em>
+            </h2>
+            <p style={{ fontSize: "0.85rem", color: "rgba(240,240,240,0.35)", lineHeight: 1.7, maxWidth: "28ch", fontFamily: '"Satoshi", sans-serif' }}>
+              A two-person studio obsessed with clean code, thoughtful UX, and products that actually ship.
+            </p>
           </div>
-        </SectionReveal>
 
-        {/* Member grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-12 md:gap-20">
+          <Link
+            href="/team"
+            className="btn-fill-outline inline-flex items-center gap-3 px-5 py-2.5 text-[9px] uppercase tracking-[0.25em] border border-white/15 self-start"
+          >
+            Meet the Team →
+          </Link>
+        </div>
+
+        {/* Right: 2 portrait cards */}
+        <div className="flex flex-1 gap-4 md:gap-6 min-h-0">
           {team.map((member, i) => (
-            <SectionReveal key={member.id} delay={i * 0.12}>
-              <Link href="/team" className="group block">
-                {/* Photo */}
-                <div className="relative w-full aspect-4/5 mb-7 overflow-hidden bg-muted">
-                  <Image
-                    src={member.image}
-                    alt={member.name}
-                    fill
-                    className="object-cover object-top transition-transform duration-700 will-gpu group-hover:scale-[1.03]"
-                    sizes="(max-width: 640px) 100vw, 50vw"
-                  />
-                  {/* Ghost index */}
-                  <span className="absolute bottom-5 right-5 font-heading text-7xl leading-none text-white/8 select-none pointer-events-none">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                </div>
-
-                {/* Info */}
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="font-heading text-2xl md:text-3xl text-foreground leading-tight mb-1 group-hover:opacity-70 transition-opacity duration-300">
-                      {member.name}
-                    </h3>
-                    <p className="text-[10px] font-medium uppercase tracking-[0.3em] text-muted-foreground/60 mb-4">
-                      {member.role}
-                    </p>
-                    <p className="text-sm font-light text-muted-foreground leading-relaxed">
-                      {member.shortBio}
-                    </p>
-                  </div>
-                  <span className="text-muted-foreground/25 group-hover:text-foreground group-hover:translate-x-1 transition-all duration-300 text-sm select-none mt-1 shrink-0">
-                    →
-                  </span>
-                </div>
-              </Link>
-            </SectionReveal>
+            <Portrait key={member.id} member={member} index={i} />
           ))}
         </div>
-
-        {/* Mobile CTA */}
-        <div className="mt-14 md:hidden">
-          <Button asChild variant="outline" className="w-full uppercase tracking-wider text-xs">
-            <Link href="/team">Meet the Team →</Link>
-          </Button>
-        </div>
-
       </div>
     </section>
   );
